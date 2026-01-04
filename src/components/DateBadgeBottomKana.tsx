@@ -1,0 +1,75 @@
+"use client";
+
+function parseDateForBadge(dateStr: string) {
+  const d = new Date(dateStr);
+
+  if (Number.isNaN(d.getTime())) {
+    return { day: "??", monthShort: "???", kana: "" };
+  }
+
+  const day = String(d.getDate());
+  const monthShort = d
+    .toLocaleString("en-US", { month: "short" })
+    .toUpperCase();
+
+  const kanaMap: Record<number, string> = {
+    1: "いち",
+    2: "に",
+    3: "さん",
+    4: "よん",
+    5: "ご",
+    6: "ろく",
+    7: "なな",
+    8: "はち",
+    9: "きゅう",
+    10: "じゅう",
+    11: "じゅういち",
+    12: "じゅうに",
+    13: "じゅうさん",
+    14: "じゅうよん",
+    15: "じゅうご",
+    16: "じゅうろく",
+    17: "じゅうなな",
+    18: "じゅうはち",
+    19: "じゅうきゅう",
+    20: "にじゅう",
+    21: "にじゅういち",
+    22: "にじゅうに",
+    23: "にじゅうさん",
+    24: "にじゅうよん",
+    25: "にじゅうご",
+    26: "にじゅうろく",
+    27: "にじゅうなな",
+    28: "にじゅうはち",
+    29: "にじゅうきゅう",
+    30: "さんじゅう",
+    31: "さんじゅういち",
+  };
+
+  return { day, monthShort, kana: kanaMap[d.getDate()] ?? "" };
+}
+
+export default function DateBadgeBottomKana({ dateStr }: { dateStr: string }) {
+  const { day, monthShort, kana } = parseDateForBadge(dateStr);
+
+  return (
+    <div className="flex flex-col items-end leading-none text-right">
+      {/* DAY */}
+      <span className="font-serif font-extrabold text-[64px] md:text-[72px] text-[var(--kizuna-yellow)]">
+        {day}
+      </span>
+
+      {/* KANA — SINGLE LINE, NEVER WRAPS */}
+      {!!kana && (
+        <span className="mt-1 font-serif font-bold text-[15px] text-[var(--kizuna-yellow)] opacity-90 whitespace-nowrap">
+          {kana}
+        </span>
+      )}
+
+      {/* MONTH */}
+      <span className="mt-1 text-[12px] font-semibold tracking-widest text-black/60">
+        {monthShort}
+      </span>
+    </div>
+  );
+}
