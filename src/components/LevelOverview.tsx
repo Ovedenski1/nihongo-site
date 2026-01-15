@@ -1,13 +1,14 @@
 "use client";
 
-export type Level = "Basic" | "N5" | "N4" | "N3" | "N2" | "N1";
+export type Level = "All" | "Basic" | "N5" | "N4" | "N3" | "N2" | "N1";
 
 export type LevelOverviewData = Record<
-  Level,
+  Exclude<Level, "All">,
   { heading: string; intro: string[]; contents: string[]; eligibility: string }
 >;
 
 const levelLabelBg: Record<Level, string> = {
+  All: "Всички",
   Basic: "Основно ниво",
   N5: "N5",
   N4: "N4",
@@ -58,8 +59,10 @@ export default function LevelOverview({
   onChange: (lvl: Level) => void;
   data: LevelOverviewData;
 }) {
-  const lvls: Level[] = ["Basic", "N5", "N4", "N3", "N2", "N1"];
-  const info = data[level];
+  const lvls: Level[] = ["All", "Basic", "N5", "N4", "N3", "N2", "N1"];
+
+  // ✅ For "All" show some default info block so the section doesn't disappear.
+  const info = level === "All" ? data["N5"] : data[level];
 
   if (!info) return null;
 

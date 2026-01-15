@@ -4,6 +4,7 @@ import Image from "next/image";
 import DateBadgeBottomKana from "@/components/DateBadgeBottomKana";
 
 export type CourseItem = {
+  level: "Basic" | "N5" | "N4" | "N3" | "N2" | "N1"; // ✅ NEW
   date: string;
   title: string;
   totalHours: number;
@@ -37,9 +38,14 @@ export default function CourseCard({ item }: { item: CourseItem }) {
 
       <div className="p-6">
         <div className="flex items-center justify-between gap-6 pt-4">
-          <h3 className="text-[26px] leading-tight font-bold text-black max-w-[70%]">
-            {item.title}
-          </h3>
+          <div className="max-w-[70%]">
+            <div className="text-xs font-semibold text-black/50">
+              {item.level}
+            </div>
+            <h3 className="text-[26px] leading-tight font-bold text-black">
+              {item.title}
+            </h3>
+          </div>
           <DateBadgeBottomKana dateStr={item.date} />
         </div>
 

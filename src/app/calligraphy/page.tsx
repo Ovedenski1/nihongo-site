@@ -1,6 +1,8 @@
 // src/app/calligraphy/page.tsx
 "use client";
 
+import { useEffect, useState } from "react";
+
 import Navbar from "@/components/Navbar";
 import CalligraphyIntro from "@/components/CalligraphyIntro";
 import CalligraphyCourseBlock, {
@@ -12,53 +14,47 @@ import WhyChooseSection from "@/components/WhyChooseSection";
 // ✅ Lucide icons
 import { Mail, Phone, MapPin } from "lucide-react";
 
-const calligraphyCourses: CalligraphyCourseItem[] = [
-  {
-    title: "Шодō за начинаещи",
-    date: "January 11, 2026",
-    scheduleLine: "Петък, 18:30–19:30",
-    format: "Online",
-    classesCount: 10,
-    teacher: { name: "Sanae Asai", photo: "/teachers/teacher2.png" },
-    description: [
-      "Учениците ще научат щрихите с четката, използвани в основния стил каишо (редовен/стандартен стил). Групата е малка, а курсът включва и домашна работа, и време за практика по време на Zoom занятията.",
-      "По време на Zoom часа учениците се очаква да показват работата си на преподавателя и останалите курсисти, за да може всички да се учат един от друг.",
-      "Учениците трябва да закупят собствените си материали преди началото на курса. След като преминат този курс веднъж, могат да продължат към Шодō – Основни канджи.",
-    ],
-    note: "Не се изисква предишен опит по Шодō или японски език.",
-    href: "/pricing",
-  },
-  {
-    title: "Кана калиграфия",
-    date: "January 18, 2026",
-    scheduleLine: "Събота и неделя, 10:00–11:30",
-    format: "Hybrid",
-    classesCount: 6,
-    teacher: { name: "Kenji Nakamura", photo: "/teachers/teacher5.png" },
-    description: [
-      "Научете красиво изписване на хирагана и катакана чрез ритъм, разстояния и контрол на четката.",
-      "Фокус върху плавност и баланс, докато изграждате чист и елегантен стил, подходящ за картички и кратки стихове.",
-    ],
-    note: "Препоръчително е след „Шодō за начинаещи“ (но не е задължително).",
-    href: "/pricing",
-  },
-  {
-    title: "Композиция с канджи",
-    date: "December 21, 2026",
-    scheduleLine: "Уикенди, 12:00–14:00",
-    format: "On-site",
-    classesCount: 8,
-    teacher: { name: "Mina Kobayashi", photo: "/teachers/teacher3.png" },
-    description: [
-      "Развийте по-силни композиции с канджи, като научите принципи за структура, разстояния и композиция.",
-      "Ще създавате завършени творби и ще се научите как да прецизирате щрихите за по-силен ефект и яснота.",
-    ],
-    note: "Средно ниво — силно препоръчителен е опит с четка.",
-    href: "/pricing",
-  },
-];
+// ✅ DB
+import { getCalligraphyCourses } from "@/lib/data";
 
 export default function CalligraphyPage() {
+  // ✅ replaces the fake constant array, everything else stays the same
+  const [calligraphyCourses, setCalligraphyCourses] = useState<
+    CalligraphyCourseItem[]
+  >([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const rows = await getCalligraphyCourses();
+
+        const mapped: CalligraphyCourseItem[] = rows.map((r) => ({
+          title: r.title,
+          // DateBadgeBottomKana can work with YYYY-MM-DD; keep it as-is
+          date: r.date,
+          scheduleLine: r.schedule_line,
+
+          // keep prop present (even if block ignores it)
+          format: "On-site",
+
+          classesCount: r.classes_count,
+          teacher: {
+            name: r.teacher?.name ?? "Предстои да бъде обявен",
+            photo: r.teacher?.image ?? "/teachers/teacher1.png",
+          },
+          description: r.description ?? [],
+          note: r.note ?? undefined,
+          href: r.href ?? "/pricing",
+        }));
+
+        setCalligraphyCourses(mapped);
+      } catch (e) {
+        console.error("getCalligraphyCourses error:", e);
+        setCalligraphyCourses([]);
+      }
+    })();
+  }, []);
+
   return (
     <>
       <Navbar />
@@ -95,7 +91,7 @@ export default function CalligraphyPage() {
       <CalligraphyCurriculum />
 
       {/* COURSES LIST */}
-      <main className="min-h-screen bg-[#fafbfa] text-black">
+      <main className=" bg-[#fafbfa] text-black">
         <section
           id="calligraphy-classes"
           className="mx-auto max-w-6xl px-6 py-16"

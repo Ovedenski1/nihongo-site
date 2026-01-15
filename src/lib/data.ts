@@ -9,9 +9,12 @@ export type TeacherRow = {
   description: string | null;
 };
 
+export type CourseLevel = "Basic" | "N5" | "N4" | "N3" | "N2" | "N1";
+
 export type CourseRow = {
   id: string;
   title: string;
+  level: CourseLevel;
   start_date: string;
   total_hours: number;
   price: number;
@@ -20,13 +23,7 @@ export type CourseRow = {
   format: "On-site" | "Online" | "Hybrid";
   href: string | null;
   teacher_id: string | null;
-  teacher: {
-    id: string;
-    name: string;
-    title: string | null;
-    image: string;
-    description: string | null;
-  } | null;
+  teacher: TeacherRow | null;
 };
 
 /** Normalize DB value to storage object name inside bucket */
@@ -84,6 +81,7 @@ export async function getCourses(): Promise<CourseRow[]> {
       `
       id,
       title,
+      level,
       start_date,
       total_hours,
       price,
@@ -113,7 +111,9 @@ export async function getCourses(): Promise<CourseRow[]> {
         ? { ...c.teacher, image: await signTeacherImage(c.teacher.image) }
         : null;
 
-      return { ...c, teacher } as CourseRow;
+      const level = (c.level ?? "N5") as CourseLevel;
+
+      return { ...c, level, teacher } as CourseRow;
     })
   );
 
@@ -133,6 +133,7 @@ export async function getHomeCourses(limit = 6): Promise<CourseRow[]> {
       `
       id,
       title,
+      level,
       start_date,
       total_hours,
       price,
@@ -164,7 +165,66 @@ export async function getHomeCourses(limit = 6): Promise<CourseRow[]> {
         ? { ...c.teacher, image: await signTeacherImage(c.teacher.image) }
         : null;
 
-      return { ...c, teacher } as CourseRow;
+      const level = (c.level ?? "N5") as CourseLevel;
+
+      return { ...c, level, teacher } as CourseRow;
+    })
+  );
+
+  return signed;
+}
+
+/** -------------------- CALLIGRAPHY COURSES -------------------- **/
+
+export type CalligraphyCourseRow = {
+  id: string;
+  title: string;
+  date: string; // YYYY-MM-DD
+  schedule_line: string;
+  classes_count: number;
+  teacher_id: string | null;
+  description: string[];
+  note: string | null;
+  href: string;
+  teacher: TeacherRow | null;
+};
+
+export async function getCalligraphyCourses(): Promise<CalligraphyCourseRow[]> {
+  const { data, error } = await supabase
+    .from("calligraphy_courses")
+    .select(
+      `
+      id,
+      title,
+      date,
+      schedule_line,
+      classes_count,
+      teacher_id,
+      description,
+      note,
+      href,
+      teacher:teachers (
+        id,
+        name,
+        title,
+        image,
+        description
+      )
+    `
+    )
+    .order("date", { ascending: true });
+
+  if (error) throw error;
+
+  const rows = (data ?? []) as any[];
+
+  const signed = await Promise.all(
+    rows.map(async (c) => {
+      const teacher = c.teacher
+        ? { ...c.teacher, image: await signTeacherImage(c.teacher.image) }
+        : null;
+
+      return { ...c, teacher } as CalligraphyCourseRow;
     })
   );
 
@@ -175,7 +235,7 @@ export async function getHomeCourses(limit = 6): Promise<CourseRow[]> {
 
 export type NewsRow = {
   id: string;
-  slug: string; // ✅ NEW
+  slug: string;
   title: string | null;
   content: string | null;
   created_at: string | null;

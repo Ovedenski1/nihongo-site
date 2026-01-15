@@ -1,15 +1,8 @@
-// src/app/admin/page.tsx
 import AdminGuard from "@/components/AdminGuard";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 
-function SimpleCard({
-  href,
-  label,
-}: {
-  href: string;
-  label: string;
-}) {
+function SimpleCard({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
@@ -37,10 +30,11 @@ export default function AdminPage() {
             Администраторски панел
           </h1>
 
-          <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-4">
             <SimpleCard href="/admin/courses" label="Добави курсове" />
             <SimpleCard href="/admin/teachers" label="Добави преподаватели" />
             <SimpleCard href="/admin/news" label="Добави новини" />
+            <SimpleCard href="/admin/calligraphy" label="Добави калиграфия" />
           </div>
         </div>
       </main>

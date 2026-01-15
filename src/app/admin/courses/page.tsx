@@ -1,4 +1,3 @@
-// src/app/admin/courses/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -9,6 +8,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { CourseRow, TeacherRow } from "@/lib/data";
 
 type FormatType = "On-site" | "Online" | "Hybrid";
+type LevelType = "Basic" | "N5" | "N4" | "N3" | "N2" | "N1";
 
 const DAYS = [
   "Monday",
@@ -25,6 +25,7 @@ type Day = (typeof DAYS)[number];
 type FormState = {
   id?: string;
   title: string;
+  level: LevelType; // ✅ NEW
   start_date: string;
   total_hours: number;
   price: number;
@@ -37,6 +38,7 @@ type FormState = {
 
 const emptyForm: FormState = {
   title: "",
+  level: "N5",
   start_date: "",
   total_hours: 0,
   price: 0,
@@ -85,6 +87,15 @@ const FORMAT_BG: Record<FormatType, string> = {
   Hybrid: "Хибридно",
 };
 
+const LEVEL_BG: Record<LevelType, string> = {
+  Basic: "Основно ниво",
+  N5: "N5",
+  N4: "N4",
+  N3: "N3",
+  N2: "N2",
+  N1: "N1",
+};
+
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<CourseRow[]>([]);
   const [teachers, setTeachers] = useState<TeacherRow[]>([]);
@@ -120,7 +131,7 @@ export default function AdminCoursesPage() {
     const { data: cData, error: cErr } = await supabase
       .from("courses")
       .select(
-        "id,title,start_date,total_hours,price,days,time,format,href,teacher_id"
+        "id,title,level,start_date,total_hours,price,days,time,format,href,teacher_id"
       )
       .order("start_date", { ascending: true });
 
@@ -162,6 +173,7 @@ export default function AdminCoursesPage() {
     setForm({
       id: r.id,
       title: r.title ?? "",
+      level: ((r.level ?? "N5") as LevelType) ?? "N5",
       start_date: r.start_date ?? "",
       total_hours: Number(r.total_hours ?? 0),
       price: Number(r.price ?? 0),
@@ -188,6 +200,7 @@ export default function AdminCoursesPage() {
 
   function validate() {
     if (!form.title.trim()) return "Моля, въведете име на курса.";
+    if (!form.level) return "Моля, изберете ниво.";
     if (!form.start_date) return "Моля, изберете начална дата.";
     if (!form.format) return "Моля, изберете формат.";
     if (!form.teacher_id) return "Моля, изберете преподавател.";
@@ -215,6 +228,7 @@ export default function AdminCoursesPage() {
 
     const payload = {
       title: form.title.trim(),
+      level: form.level, // ✅
       start_date: form.start_date,
       total_hours: Number(form.total_hours),
       price: Number(form.price),
@@ -309,7 +323,30 @@ export default function AdminCoursesPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-black/60">
+                    Ниво
+                  </label>
+                  <select
+                    className="mt-1 h-11 w-full rounded-xl border border-black/15 px-4"
+                    value={form.level}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        level: e.target.value as LevelType,
+                      }))
+                    }
+                  >
+                    <option value="Basic">Основно ниво</option>
+                    <option value="N5">N5</option>
+                    <option value="N4">N4</option>
+                    <option value="N3">N3</option>
+                    <option value="N2">N2</option>
+                    <option value="N1">N1</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="text-xs font-semibold text-black/60">
                     Начална дата
@@ -506,13 +543,15 @@ export default function AdminCoursesPage() {
                         "Неизвестен"
                       : "Неизвестен";
 
+                  const lvl = ((c.level ?? "N5") as LevelType) ?? "N5";
+
                   return (
                     <div key={c.id} className="p-4 bg-white">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <div className="font-semibold">{c.title}</div>
                           <div className="mt-1 text-sm text-black/60">
-                            {c.start_date} ·{" "}
+                            {LEVEL_BG[lvl]} · {c.start_date} ·{" "}
                             {FORMAT_BG[(c.format as FormatType) ?? "On-site"]} ·{" "}
                             {c.total_hours}ч · {c.price}€
                           </div>

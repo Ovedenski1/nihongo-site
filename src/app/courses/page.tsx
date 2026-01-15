@@ -1,4 +1,3 @@
-// src/app/courses/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -18,6 +17,7 @@ import { Mail, Phone, MapPin } from "lucide-react";
 
 function mapCourseRowToCourseItem(c: CourseRow): CourseItem {
   return {
+    level: c.level ?? "N5",
     date: c.start_date,
     title: c.title,
     totalHours: c.total_hours,
@@ -41,7 +41,8 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<CourseItem[]>([]);
   const [coursesErr, setCoursesErr] = useState<string | null>(null);
 
-  const [overviewLevel, setOverviewLevel] = useState<Level>("N5");
+  // ✅ Default to All
+  const [overviewLevel, setOverviewLevel] = useState<Level>("All");
 
   useEffect(() => {
     async function load() {
@@ -79,15 +80,10 @@ export default function CoursesPage() {
     setOverviewLevel(lvl);
   }
 
-  // ✅ Filter courses by selected level.
-  // Assumption: your DB course titles include the level (N5/N4/etc or Basic).
-  // If you have a "level" column in DB later, swap to that.
+  // ✅ Filter by real DB level
   const filteredCourses = useMemo(() => {
-    const needle = overviewLevel === "Basic" ? "Basic" : overviewLevel; // N5..N1
-    return courses.filter((c) => {
-      const hay = `${c.title} ${c.href ?? ""}`.toLowerCase();
-      return hay.includes(needle.toLowerCase());
-    });
+    if (overviewLevel === "All") return courses;
+    return courses.filter((c) => c.level === overviewLevel);
   }, [courses, overviewLevel]);
 
   if (loadingConfig) {
@@ -100,6 +96,12 @@ export default function CoursesPage() {
       </>
     );
   }
+
+  // ✅ Book slider fallback (because config.booksByLevel doesn't have "All")
+  const booksForSlider =
+    overviewLevel === "All"
+      ? config.booksByLevel.N5
+      : (config.booksByLevel as any)[overviewLevel] ?? config.booksByLevel.N5;
 
   return (
     <>
@@ -114,13 +116,10 @@ export default function CoursesPage() {
           <LevelOverview
             level={overviewLevel}
             onChange={handleOverviewChange}
-            data={config.levelOverview}
+            data={config.levelOverview as any}
           />
 
-          <BookSlider
-            title="Учебници"
-            books={config.booksByLevel[overviewLevel] ?? config.booksByLevel.N5}
-          />
+          <BookSlider title="Учебници" books={booksForSlider ?? []} />
 
           <div className="mt-16" id="courses-cards">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

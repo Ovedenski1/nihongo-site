@@ -2,10 +2,13 @@ import type { BookItem } from "@/components/BookSlider";
 import type { Level } from "@/components/LevelOverview";
 import type { CourseItem } from "@/components/CourseCard";
 
-export type CourseWithLevel = CourseItem & { level: Level };
+// Level now includes "All" in the UI, but config data should NOT require it.
+export type ConfigLevel = Exclude<Level, "All">;
+
+export type CourseWithLevel = CourseItem & { level: ConfigLevel };
 
 export type LevelOverviewData = Record<
-  Level,
+  ConfigLevel,
   { heading: string; intro: string[]; contents: string[]; eligibility: string }
 >;
 
@@ -20,7 +23,7 @@ export type CoursesPageConfig = {
     teachersHref: string;
   };
   levelOverview: LevelOverviewData;
-  booksByLevel: Record<Level, BookItem[]>;
+  booksByLevel: Record<ConfigLevel, BookItem[]>;
   courses: CourseWithLevel[];
 };
 
@@ -139,137 +142,135 @@ export const defaultCoursesConfig: CoursesPageConfig = {
     },
   },
 
-  booksByLevel: {
+    booksByLevel: {
     Basic: [
       {
         title: "Beginner 1: Survival Japanese (Basic)",
         subtitle: "Започнете да говорите с прости и полезни фрази.",
-        image: "/books/basic-1.jpg",
+        image: "/books/basic.jpg",
         features: [
-          { title: "Лесно и практично", text: "Научете поздрави и ежедневни фрази, които можете да използвате веднага." },
-          { title: "Стабилна основа", text: "Изградете увереност със слушане + първи навици за четене още от първия ден." },
-          { title: "Подходящо за клас", text: "Перфектно за начинаещи — ясна структура и повторение." },
+          {
+            title: "Лесно и практично",
+            text: "Научете поздрави и ежедневни фрази, които можете да използвате веднага.",
+          },
+          {
+            title: "Стабилна основа",
+            text: "Изградете увереност със слушане + първи навици за четене още от първия ден.",
+          },
+          {
+            title: "Подходящо за клас",
+            text: "Перфектно за начинаещи — ясна структура и повторение.",
+          },
         ],
         priceLine: "Отлична подготовка преди JLPT N5.",
       },
-      {
-        title: "Kana Practice Workbook",
-        subtitle: "Упражнения по хирагана и катакана",
-        image: "/books/kana-workbook.jpg",
-        features: [
-          { title: "Мускулна памет", text: "Ежедневната практика на черти помага да пишете по-бързо и по-чисто." },
-          { title: "Бързи проверки", text: "Кратки тестове ви държат постоянни без претоварване." },
-        ],
-      },
     ],
+
     N5: [
       {
         title: "Beginner 1: Japanese Textbook N5",
         subtitle: "Разговорен японски за начинаещи",
         image: "/books/book1.jpg",
         features: [
-          { title: "Говорете естествено", text: "Разговорният стил помага да звучите по-естествено на японски." },
-          { title: "Учете това, което ви вълнува", text: "Различни ситуации и фрази за „survival“ японски." },
-          { title: "Гъвкаво, практично и актуално", text: "Полезна граматика и реални ситуации за вашите приключения." },
-          { title: "Практика, практика и още практика!", text: "Много упражнения във всеки урок за усвояване на естествени фрази." },
-          { title: "Достъпна цена + аудио", text: "Цена: ¥2090 с включен данък. Аудио материалите са включени." },
+          {
+            title: "Говорете естествено",
+            text: "Разговорният стил помага да звучите по-естествено на японски.",
+          },
+          {
+            title: "Учете това, което ви вълнува",
+            text: "Различни ситуации и фрази за „survival“ японски.",
+          },
+          {
+            title: "Гъвкаво, практично и актуално",
+            text: "Полезна граматика и реални ситуации за вашите приключения.",
+          },
+          {
+            title: "Практика, практика и още практика!",
+            text: "Много упражнения във всеки урок за усвояване на естествени фрази.",
+          },
+          {
+            title: "Достъпна цена + аудио",
+            text: "Цена: ¥2090 с включен данък. Аудио материалите са включени.",
+          },
         ],
         ctaText: "Можете да изтеглите всички аудио записи от книгата оттук.",
         ctaHref: "/pricing",
       },
-      {
-        title: "JLPT N5 Practice Book",
-        subtitle: "Упражнения + мини пробни тестове",
-        image: "/books/book2.jpg",
-        features: [
-          { title: "JLPT формат", text: "Задачи в JLPT стил, за да ви е познат форматът на изпита." },
-          { title: "Постоянен напредък", text: "Седмични упражнения за стабилно усвояване на речник и граматика." },
-          { title: "Пробен тест", text: "Пробен тест в края за проверка на готовността и времето." },
-        ],
-        priceLine: "Препоръчителна като помощник за подготовка за изпита.",
-      },
     ],
+
     N4: [
       {
         title: "JLPT N4 Main Textbook",
         subtitle: "Граматика + структура за четене",
-        image: "/books/jlpt-n4.jpg",
+        image: "/books/n4.jpg",
         features: [
-          { title: "По-задълбочена граматика", text: "Усвоете ключови модели с ясни примери." },
-          { title: "Практика по четене", text: "Кратки текстове за скорост и разбиране." },
-        ],
-      },
-      {
-        title: "JLPT N4 Practice Workbook",
-        subtitle: "Допълнителни упражнения",
-        image: "/books/jlpt-n4-workbook.jpg",
-        features: [
-          { title: "Много задачи", text: "Повече практика = по-бърз напредък и по-малко изненади." },
-          { title: "Увереност за теста", text: "Свикнете с формата и времевия натиск." },
+          {
+            title: "По-задълбочена граматика",
+            text: "Усвоете ключови модели с ясни примери.",
+          },
+          {
+            title: "Практика по четене",
+            text: "Кратки текстове за скорост и разбиране.",
+          },
         ],
       },
     ],
+
     N3: [
       {
         title: "JLPT N3 Textbook",
         subtitle: "Средно ниво граматика + четене",
-        image: "/books/jlpt-n3.jpg",
+        image: "/books/n3.jpg",
         features: [
-          { title: "Реални материали", text: "Мост към съдържание, близко до нивото на носители на езика." },
-          { title: "Развитие на слушането", text: "Разбирайте по-дълги разговори и съобщения." },
-        ],
-      },
-      {
-        title: "JLPT N3 Practice Book",
-        subtitle: "Изпитни упражнения",
-        image: "/books/jlpt-n3-practice.jpg",
-        features: [
-          { title: "Практика с време", text: "Изградете скорост със структурирани упражнения." },
-          { title: "Речников тласък", text: "Фокус върху най-често срещаните JLPT думи." },
+          {
+            title: "Реални материали",
+            text: "Мост към съдържание, близко до нивото на носители на езика.",
+          },
+          {
+            title: "Развитие на слушането",
+            text: "Разбирайте по-дълги разговори и съобщения.",
+          },
         ],
       },
     ],
+
     N2: [
       {
         title: "JLPT N2 Textbook",
         subtitle: "Напреднало четене + граматика",
-        image: "/books/jlpt-n2.jpg",
+        image: "/books/n2.jpg",
         features: [
-          { title: "Плътно четене", text: "Тренировка с по-дълги текстове и въпроси по смисъл." },
-          { title: "Високо ниво граматика", text: "Усвоете нюансирани форми, използвани във формален японски." },
-        ],
-      },
-      {
-        title: "JLPT N2 Practice Book",
-        subtitle: "Пробни тестове",
-        image: "/books/jlpt-n2-practice.jpg",
-        features: [
-          { title: "Изпитна стратегия", text: "Научете темпо и типични модели на въпросите." },
-          { title: "Увереност", text: "Няколко пробни теста преди реалния изпит." },
+          {
+            title: "Плътно четене",
+            text: "Тренировка с по-дълги текстове и въпроси по смисъл.",
+          },
+          {
+            title: "Високо ниво граматика",
+            text: "Усвоете нюансирани форми, използвани във формален японски.",
+          },
         ],
       },
     ],
+
     N1: [
       {
         title: "JLPT N1 Textbook",
         subtitle: "Почти ниво на носител на езика",
-        image: "/books/jlpt-n1.jpg",
+        image: "/books/n1.jpg",
         features: [
-          { title: "Сложно съдържание", text: "Академични и редакционни текстове." },
-          { title: "Нюансиран език", text: "Фини разлики в граматика и речник." },
-        ],
-      },
-      {
-        title: "JLPT N1 Practice Book",
-        subtitle: "Упражнения с висока трудност",
-        image: "/books/jlpt-n1-practice.jpg",
-        features: [
-          { title: "Труден режим", text: "Практика върху това, което наистина се среща на N1." },
-          { title: "Пробни изпити", text: "Пълни примерни тестове." },
+          {
+            title: "Сложно съдържание",
+            text: "Академични и редакционни текстове.",
+          },
+          {
+            title: "Нюансиран език",
+            text: "Фини разлики в граматика и речник.",
+          },
         ],
       },
     ],
   },
+
 
   courses: [
     {
