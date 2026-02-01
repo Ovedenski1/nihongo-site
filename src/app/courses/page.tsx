@@ -15,6 +15,17 @@ import {
 import { getCourses, type CourseRow } from "@/lib/data";
 import { Mail, Phone, MapPin } from "lucide-react";
 
+/* ✅ NEW — tiny helper (no behavior change elsewhere) */
+function isUpcoming(startDate: string) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const d = new Date(startDate);
+  d.setHours(0, 0, 0, 0);
+
+  return d.getTime() >= today.getTime();
+}
+
 function mapCourseRowToCourseItem(c: CourseRow): CourseItem {
   return {
     level: c.level ?? "N5",
@@ -41,7 +52,6 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<CourseItem[]>([]);
   const [coursesErr, setCoursesErr] = useState<string | null>(null);
 
-  // ✅ Default to All
   const [overviewLevel, setOverviewLevel] = useState<Level>("All");
 
   useEffect(() => {
@@ -65,8 +75,12 @@ export default function CoursesPage() {
       try {
         setLoadingCourses(true);
         setCoursesErr(null);
+
         const rows = await getCourses();
-        setCourses(rows.map(mapCourseRowToCourseItem));
+        const mapped = rows.map(mapCourseRowToCourseItem);
+
+        /* ✅ ONLY CHANGE: hide past courses */
+        setCourses(mapped.filter((c) => isUpcoming(c.date)));
       } catch (e: any) {
         setCoursesErr(e?.message ?? "Неуспешно зареждане на курсовете");
         setCourses([]);
@@ -80,7 +94,6 @@ export default function CoursesPage() {
     setOverviewLevel(lvl);
   }
 
-  // ✅ Filter by real DB level
   const filteredCourses = useMemo(() => {
     if (overviewLevel === "All") return courses;
     return courses.filter((c) => c.level === overviewLevel);
@@ -97,7 +110,6 @@ export default function CoursesPage() {
     );
   }
 
-  // ✅ Book slider fallback (because config.booksByLevel doesn't have "All")
   const booksForSlider =
     overviewLevel === "All"
       ? config.booksByLevel.N5
@@ -140,7 +152,7 @@ export default function CoursesPage() {
                 </div>
               ) : filteredCourses.length === 0 ? (
                 <div className="col-span-full rounded-2xl border border-black/10 bg-white p-6 text-black/60">
-                  Няма налични курсове за избраното ниво.
+                  Няма налични курсове.
                 </div>
               ) : (
                 filteredCourses.map((course, idx) => (

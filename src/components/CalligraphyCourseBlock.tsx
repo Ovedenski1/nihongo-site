@@ -7,10 +7,9 @@ export type CalligraphyCourseItem = {
   title: string;
   date: string; // YYYY-MM-DD
   scheduleLine: string;
-  classesCount: number;
+  price?: number;
   teacher: { name: string; photo: string };
   description: string[];
-  note?: string;
   href: string;
 };
 
@@ -19,15 +18,15 @@ export default function CalligraphyCourseBlock({
 }: {
   item: CalligraphyCourseItem;
 }) {
-  const meta = `${item.classesCount} ЗАНЯТИЯ · ${item.teacher.name.toUpperCase()}`;
-
   return (
     <article className="border-b border-black/10 py-10">
       <div className="flex flex-col gap-8 md:flex-row md:items-start md:gap-10">
+        {/* DATE */}
         <div className="shrink-0 md:w-[140px]">
           <DateBadgeBottomKana dateStr={item.date} />
         </div>
 
+        {/* CONTENT */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
@@ -39,11 +38,15 @@ export default function CalligraphyCourseBlock({
                 {item.scheduleLine}
               </div>
 
-              <div className="mt-3 text-sm font-extrabold tracking-wide text-black">
-                {meta}
-              </div>
+              {/* ✅ PRICE ONLY */}
+              {typeof item.price === "number" && (
+                <div className="mt-2 text-sm font-bold text-black">
+                  Цена: {item.price} лв.
+                </div>
+              )}
             </div>
 
+            {/* TEACHER (RIGHT SIDE) */}
             <div className="flex items-center gap-3 sm:flex-col sm:items-end">
               <div className="relative h-12 w-12 rounded-full overflow-hidden border border-black/10 bg-black/5">
                 <Image
@@ -59,16 +62,14 @@ export default function CalligraphyCourseBlock({
             </div>
           </div>
 
+          {/* DESCRIPTION */}
           <div className="mt-7 space-y-4 text-[16px] leading-7 text-black/85 max-w-3xl">
             {item.description.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
           </div>
 
-          {item.note ? (
-            <p className="mt-6 italic text-black/70 max-w-3xl">{item.note}</p>
-          ) : null}
-
+          {/* CTA */}
           <div className="mt-8">
             <a
               href={item.href}

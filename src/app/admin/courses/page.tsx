@@ -1,3 +1,4 @@
+// src/app/admin/courses/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -25,10 +26,13 @@ type Day = (typeof DAYS)[number];
 type FormState = {
   id?: string;
   title: string;
-  level: LevelType; // ✅ NEW
+  level: LevelType;
   start_date: string;
-  total_hours: number;
-  price: number;
+
+  // ✅ FIX: keep as string while typing (prevents "0" sticking)
+  total_hours: string;
+  price: string;
+
   days: Day[];
   time_start: string;
   time_end: string;
@@ -40,8 +44,8 @@ const emptyForm: FormState = {
   title: "",
   level: "N5",
   start_date: "",
-  total_hours: 0,
-  price: 0,
+  total_hours: "", // ✅
+  price: "", // ✅
   days: [],
   time_start: "",
   time_end: "",
@@ -175,8 +179,11 @@ export default function AdminCoursesPage() {
       title: r.title ?? "",
       level: ((r.level ?? "N5") as LevelType) ?? "N5",
       start_date: r.start_date ?? "",
-      total_hours: Number(r.total_hours ?? 0),
-      price: Number(r.price ?? 0),
+
+      // ✅ strings so inputs behave nicely
+      total_hours: String(r.total_hours ?? ""),
+      price: String(r.price ?? ""),
+
       days: toDayArray(r.days ?? []),
       time_start: parts[0] ?? "",
       time_end: parts[1] ?? "",
@@ -199,21 +206,28 @@ export default function AdminCoursesPage() {
   }
 
   function validate() {
+    const hours = Number(form.total_hours);
+    const price = Number(form.price);
+
     if (!form.title.trim()) return "Моля, въведете име на курса.";
     if (!form.level) return "Моля, изберете ниво.";
     if (!form.start_date) return "Моля, изберете начална дата.";
     if (!form.format) return "Моля, изберете формат.";
     if (!form.teacher_id) return "Моля, изберете преподавател.";
-    if (!Number(form.total_hours) || Number(form.total_hours) <= 0)
+
+    if (!Number.isFinite(hours) || hours <= 0)
       return "Часовете трябва да са повече от 0.";
-    if (form.price == null || Number.isNaN(Number(form.price)))
+
+    if (form.price === "" || !Number.isFinite(price))
       return "Моля, въведете цена.";
-    if (Number(form.price) < 0) return "Цената не може да е отрицателна.";
+
+    if (price < 0) return "Цената не може да е отрицателна.";
     if (!form.days.length) return "Моля, изберете поне един ден.";
     if (!form.time_start || !form.time_end)
       return "Моля, изберете начален и краен час.";
     if (form.time_end <= form.time_start)
       return "Крайният час трябва да е след началния.";
+
     return null;
   }
 
@@ -228,7 +242,7 @@ export default function AdminCoursesPage() {
 
     const payload = {
       title: form.title.trim(),
-      level: form.level, // ✅
+      level: form.level,
       start_date: form.start_date,
       total_hours: Number(form.total_hours),
       price: Number(form.price),
@@ -315,7 +329,7 @@ export default function AdminCoursesPage() {
                 </label>
                 <input
                   className="mt-1 h-11 w-full rounded-xl border border-black/15 px-4"
-                  placeholder="Japanese N5"
+                  placeholder=""
                   value={form.title}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, title: e.target.value }))
@@ -391,13 +405,10 @@ export default function AdminCoursesPage() {
                     className="mt-1 h-11 w-full rounded-xl border border-black/15 px-4"
                     type="number"
                     min={1}
-                    placeholder="30"
+                    placeholder="0"
                     value={form.total_hours}
                     onChange={(e) =>
-                      setForm((p) => ({
-                        ...p,
-                        total_hours: Number(e.target.value),
-                      }))
+                      setForm((p) => ({ ...p, total_hours: e.target.value }))
                     }
                   />
                 </div>
@@ -410,10 +421,10 @@ export default function AdminCoursesPage() {
                     className="mt-1 h-11 w-full rounded-xl border border-black/15 px-4"
                     type="number"
                     min={0}
-                    placeholder="15"
+                    placeholder="0"
                     value={form.price}
                     onChange={(e) =>
-                      setForm((p) => ({ ...p, price: Number(e.target.value) }))
+                      setForm((p) => ({ ...p, price: e.target.value }))
                     }
                   />
                 </div>

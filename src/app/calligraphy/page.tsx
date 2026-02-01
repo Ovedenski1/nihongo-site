@@ -18,7 +18,6 @@ import { Mail, Phone, MapPin } from "lucide-react";
 import { getCalligraphyCourses } from "@/lib/data";
 
 export default function CalligraphyPage() {
-  // ✅ replaces the fake constant array, everything else stays the same
   const [calligraphyCourses, setCalligraphyCourses] = useState<
     CalligraphyCourseItem[]
   >([]);
@@ -30,7 +29,6 @@ export default function CalligraphyPage() {
 
         const mapped: CalligraphyCourseItem[] = rows.map((r) => ({
           title: r.title,
-          // DateBadgeBottomKana can work with YYYY-MM-DD; keep it as-is
           date: r.date,
           scheduleLine: r.schedule_line,
 
@@ -38,13 +36,19 @@ export default function CalligraphyPage() {
           format: "On-site",
 
           classesCount: r.classes_count,
+
+          // ✅ NEW: price from DB (make sure your query returns it)
+          price: typeof r.price === "number" ? r.price : undefined,
+
           teacher: {
             name: r.teacher?.name ?? "Предстои да бъде обявен",
             photo: r.teacher?.image ?? "/teachers/teacher1.png",
           },
           description: r.description ?? [],
           note: r.note ?? undefined,
-          href: r.href ?? "/pricing",
+
+          // legacy; button is handled inside CalligraphyCourseBlock (it goes to /contact)
+          href: r.href ?? "/contact",
         }));
 
         setCalligraphyCourses(mapped);
@@ -58,7 +62,7 @@ export default function CalligraphyPage() {
   return (
     <>
       <Navbar />
-      {/* ✅ WHY SECTION (TOP, uses tanuki2.png) */}
+
       <WhyChooseSection
         title="Защо да учиш Шодō с Kizuna?"
         accent="#ed1925"
@@ -84,21 +88,14 @@ export default function CalligraphyPage() {
           },
         ]}
       />
-      {/* HERO / INTRO */}
-      <CalligraphyIntro />
 
-      {/* Curriculum (optional placement — keep if you want it here) */}
+      <CalligraphyIntro />
       <CalligraphyCurriculum />
 
-      {/* COURSES LIST */}
-      <main className=" bg-[#fafbfa] text-black">
-        <section
-          id="calligraphy-classes"
-          className="mx-auto max-w-6xl px-6 py-16"
-        >
-          <h1 className="text-3xl md:text-4xl font-bold">
-            Калиграфия (Шодō)
-          </h1>
+      <main className="bg-[#fafbfa] text-black">
+        <section id="calligraphy-classes" className="mx-auto max-w-6xl px-6 py-16">
+          <h1 className="text-3xl md:text-4xl font-bold">Калиграфия (Шодō)</h1>
+
           <p className="mt-4 max-w-2xl text-black/70">
             Традиционни занятия по писане с четка — техника, ритъм, баланс и
             композиция.
@@ -113,9 +110,7 @@ export default function CalligraphyPage() {
             ))}
           </div>
 
-          {/* CONTACT ROW (same style as Courses page) */}
           <div className="mt-20 flex flex-wrap items-center justify-center gap-16 text-lg font-medium">
-            {/* Email */}
             <div className="flex items-center gap-5">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-600">
                 <Mail size={22} className="text-white" />
@@ -123,7 +118,6 @@ export default function CalligraphyPage() {
               <span>info@kizuna.bg</span>
             </div>
 
-            {/* Phone */}
             <div className="flex items-center gap-5">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-600">
                 <Phone size={22} className="text-white" />
@@ -131,7 +125,6 @@ export default function CalligraphyPage() {
               <span>+359 000 000 000</span>
             </div>
 
-            {/* Address */}
             <div className="flex items-center gap-5">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-600">
                 <MapPin size={22} className="text-white" />

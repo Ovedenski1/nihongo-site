@@ -2,7 +2,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import LevelsInteractive from "@/components/LevelsInteractive";
 import SectionHeader from "@/components/SectionHeader";
 import EventCard, { type EventItem } from "@/components/EventCard";
@@ -57,25 +57,47 @@ export default function HomePage() {
 
   const SLIDE_MS = 3500;
 
-  // HERO slider
+  // ✅ keep latest paused value in a ref so interval never "stales"/gets stuck
+  const pausedRef = useRef(false);
+
   useEffect(() => {
-    const onVisibilityChange = () => setPaused(document.hidden);
+    pausedRef.current = paused;
+  }, [paused]);
+
+  // ✅ Pause when tab is hidden; resume when visible
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        pausedRef.current = true;
+        setPaused(true);
+      } else {
+        pausedRef.current = false;
+        setPaused(false);
+      }
+    };
+
     document.addEventListener("visibilitychange", onVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
 
-    if (paused) {
-      return () =>
-        document.removeEventListener("visibilitychange", onVisibilityChange);
-    }
-
+  // ✅ One interval only; loops forever; respects pausedRef + visibility
+  useEffect(() => {
     const id = setInterval(() => {
+      if (document.hidden) return;
+      if (pausedRef.current) return;
+
       setActive((a) => (a + 1) % slides.length);
     }, SLIDE_MS);
 
-    return () => {
-      clearInterval(id);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, [paused, slides.length]);
+    return () => clearInterval(id);
+  }, [slides.length]);
+
+  // ✅ helper: only pause-on-hover for real hover devices (prevents touch “stuck pause”)
+  const canHover = () =>
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(hover: hover)").matches;
 
   // Load courses + teachers from DB
   useEffect(() => {
@@ -139,8 +161,12 @@ export default function HomePage() {
       {/* HERO */}
       <section
         className="hero-shell"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
+        onMouseEnter={() => {
+          if (canHover()) setPaused(true);
+        }}
+        onMouseLeave={() => {
+          if (canHover()) setPaused(false);
+        }}
       >
         {/* ✅ UPDATED TOPBAR with dropdown (Курсове does NOT navigate) */}
         <header className="topbar">
@@ -162,9 +188,9 @@ export default function HomePage() {
           </div>
 
           <div className="topbar-right flex items-center gap-4">
-  {/* NAV */}
-  <nav
-    className="
+            {/* NAV */}
+            <nav
+              className="
       hidden md:flex items-center gap-6
       text-sm font-semibold text-black
       bg-white/80 backdrop-blur-md
@@ -172,51 +198,48 @@ export default function HomePage() {
       border border-black/10
       relative
     "
-  >
-    
+            >
+              <a
+                href="/courses"
+                className="hover:text-[var(--kizuna-red)] transition"
+              >
+                Японски език
+              </a>
 
-    <a
-      href="/courses"
-      className="hover:text-[var(--kizuna-red)] transition"
-    >
-      Японски език
-    </a>
+              <a
+                href="/calligraphy"
+                className="hover:text-[var(--kizuna-red)] transition"
+              >
+                Калиграфия
+              </a>
 
-    <a
-      href="/calligraphy"
-      className="hover:text-[var(--kizuna-red)] transition"
-    >
-      Калиграфия
-    </a>
+              <a
+                href="/teachers"
+                className="hover:text-[var(--kizuna-red)] transition"
+              >
+                Екип
+              </a>
 
-    <a
-      href="/teachers"
-      className="hover:text-[var(--kizuna-red)] transition"
-    >
-      Екип
-    </a>
+              <a
+                href="/news"
+                className="hover:text-[var(--kizuna-red)] transition"
+              >
+                Новини
+              </a>
 
-    <a
-      href="/news"
-      className="hover:text-[var(--kizuna-red)] transition"
-    >
-      Новини
-    </a>
+              <a
+                href="/about"
+                className="hover:text-[var(--kizuna-red)] transition"
+              >
+                За нас
+              </a>
+            </nav>
 
-    <a
-      href="/about"
-      className="hover:text-[var(--kizuna-red)] transition"
-    >
-      За нас
-    </a>
-  </nav>
-
-  {/* APPLY BUTTON */}
-  <a className="btn-apply" href="#mission">
-    Запиши се
-  </a>
-</div>
-
+            {/* APPLY BUTTON */}
+            <a className="btn-apply" href="/contact">
+              Запиши се
+            </a>
+          </div>
         </header>
 
         <div className="hero-bg" aria-hidden="true">
@@ -241,9 +264,8 @@ export default function HomePage() {
           <div>
             <h1 className="hero-title">КИЗУНА</h1>
             <div className="hero-divider" />
-            <p className="hero-subtitle">
-              Нова глава започва, следва възможност
-            </p>
+            {/* ✅ CHANGED TEXT ONLY */}
+            <p className="hero-subtitle">Пътят към японския започва тук.</p>
           </div>
         </div>
 
@@ -265,13 +287,22 @@ export default function HomePage() {
             Искаш да разбереш дали японският ти е в кръвта?
           </h2>
 
+          {/* ✅ CHANGED TEXT ONLY */}
           <p className="kizuna-maroon-text">
-            Направи този 5-минутен тест и разбери..
+            Направи този 5-минутен тест и разбери… или пък заяви определяне на
+            нивото.
           </p>
 
-          <a className="kizuna-btn" href="#">
-            напред към теста
-          </a>
+          {/* ✅ ADDED SECOND BUTTON ONLY (no other layout changes) */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a className="kizuna-btn" href="/test">
+              напред към теста
+            </a>
+
+            <a className="kizuna-btn" href="/contact">
+              заяви определяне на нивото
+            </a>
+          </div>
         </div>
       </section>
 

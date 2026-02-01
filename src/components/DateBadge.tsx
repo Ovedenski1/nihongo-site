@@ -8,9 +8,24 @@ function parseDateForBadge(dateStr: string) {
   }
 
   const day = String(d.getDate());
-  const monthShort = d
-    .toLocaleString("en-US", { month: "short" })
-    .toUpperCase();
+
+  // ✅ Bulgarian month short (consistent)
+  const monthMap: Record<number, string> = {
+    0: "ЯНУ",
+    1: "ФЕВ",
+    2: "МАР",
+    3: "АПР",
+    4: "МАЙ",
+    5: "ЮНИ",
+    6: "ЮЛИ",
+    7: "АВГ",
+    8: "СЕП",
+    9: "ОКТ",
+    10: "НОЕ",
+    11: "ДЕК",
+  };
+
+  const monthShort = monthMap[d.getMonth()] ?? "???";
 
   const kanaMap: Record<number, string> = {
     1: "いち",
@@ -50,7 +65,7 @@ function parseDateForBadge(dateStr: string) {
   return { day, monthShort, kana };
 }
 
-// split kana into 2 “lines” after 4 chars (ignores spaces)
+// split kana into 2 “lines” after 5 chars (ignores spaces)
 function splitKana(kana: string) {
   const chars = Array.from(kana.replace(/\s+/g, ""));
   const first = chars.slice(0, 5).join("");
@@ -64,7 +79,7 @@ export default function DateBadge({ dateStr }: { dateStr: string }) {
 
   return (
     <div aria-label={`Date ${dateStr}`} className="flex items-start gap-3">
-      {/* LEFT: day + month (unchanged) */}
+      {/* LEFT: day + month */}
       <div className="flex flex-col items-start leading-none">
         <span className="font-serif font-extrabold leading-none text-[64px] md:text-[72px] text-[var(--kizuna-yellow)]">
           {day}
@@ -75,7 +90,7 @@ export default function DateBadge({ dateStr }: { dateStr: string }) {
         </span>
       </div>
 
-      {/* RIGHT: kana vertical, break after 4 chars into next “line” */}
+      {/* RIGHT: kana vertical */}
       {!!kana && (
         <div className="pt-[6px] flex gap-[8px]">
           <span

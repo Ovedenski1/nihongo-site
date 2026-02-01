@@ -8,9 +8,24 @@ function parseDateForBadge(dateStr: string) {
   }
 
   const day = String(d.getDate());
-  const monthShort = d
-    .toLocaleString("en-US", { month: "short" })
-    .toUpperCase();
+
+  // ✅ Bulgarian month short (consistent)
+  const monthMap: Record<number, string> = {
+    0: "ЯНУ",
+    1: "ФЕВ",
+    2: "МАР",
+    3: "АПР",
+    4: "МАЙ",
+    5: "ЮНИ",
+    6: "ЮЛИ",
+    7: "АВГ",
+    8: "СЕП",
+    9: "ОКТ",
+    10: "НОЕ",
+    11: "ДЕК",
+  };
+
+  const monthShort = monthMap[d.getMonth()] ?? "???";
 
   const kanaMap: Record<number, string> = {
     1: "いち",

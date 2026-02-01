@@ -60,6 +60,13 @@ export default function Navbar() {
           </Link>
 
           <Link
+            href="/contact"
+            className="hover:text-black transition-colors"
+          >
+            Контакти
+          </Link>
+
+          <Link
             href="/about"
             className="hover:text-black transition-colors"
           >
@@ -70,7 +77,7 @@ export default function Navbar() {
         {/* RIGHT */}
         <div className="ml-auto flex items-center gap-3">
           <Link
-            href="/pricing"
+            href="/contact"
             className="hidden sm:inline-flex rounded-full bg-[var(--kizuna-red)] px-4 py-2 text-sm font-semibold text-white hover:opacity-95"
           >
             Запиши се

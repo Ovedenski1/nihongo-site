@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  background-image: url("/bg/white-texture.png");
-   /* --background: #f6f7f7; */
+  background-image: url("/bg/1.png");
+  /* --background: #f6f7f7; */
   --foreground: #333032;
 
   --kizuna-red: #ed1925;
@@ -36,7 +36,6 @@
 html,
 body {
   height: 100%;
-  
 }
 
 body {
@@ -70,7 +69,10 @@ body {
 
 @media (max-width: 640px) {
   .hero-shell {
-    min-height: 620px; /* less tall on mobile */
+    /* ✅ smaller on phones without affecting desktop */
+    height: 62vh;          /* ✅ CHANGED (was 72vh) */
+    min-height: 460px;     /* ✅ CHANGED (was 520px) */
+    max-height: 620px;     /* ✅ CHANGED (was 680px) */
   }
 }
 
@@ -107,7 +109,8 @@ body {
 
 @media (max-width: 640px) {
   .hero-center {
-    padding: 96px 14px 110px;
+    /* ✅ tighter so text moves up with smaller hero */
+    padding: 82px 14px 88px; /* ✅ CHANGED (was 96px 14px 110px) */
   }
 }
 
@@ -121,6 +124,13 @@ body {
   word-break: keep-all;
 }
 
+/* ✅ slightly smaller title on mobile */
+@media (max-width: 640px) {
+  .hero-title {
+    font-size: clamp(38px, 12vw, 70px);
+  }
+}
+
 .hero-divider {
   margin: 18px auto 0;
   height: 1px;
@@ -128,11 +138,27 @@ body {
   background: rgba(0, 0, 0, 0.25);
 }
 
+/* ✅ slightly tighter divider spacing on mobile */
+@media (max-width: 640px) {
+  .hero-divider {
+    margin-top: 14px;
+    width: min(520px, 88vw);
+  }
+}
+
 .hero-subtitle {
   margin-top: 18px;
   font-size: clamp(15px, 3.2vw, 30px); /* ✅ smaller min */
   color: rgba(0, 0, 0, 0.72);
   font-weight: 500;
+}
+
+/* ✅ mobile subtitle a bit smaller + tighter */
+@media (max-width: 640px) {
+  .hero-subtitle {
+    margin-top: 14px;
+    font-size: 15px;
+  }
 }
 
 .hero-arrow {
@@ -145,7 +171,8 @@ body {
 
 @media (max-width: 640px) {
   .hero-arrow {
-    bottom: 26px;
+    bottom: 18px; /* ✅ CHANGED (was 26px) */
+    transform: translateX(-50%) scale(0.9); /* ✅ make it slightly smaller */
   }
 }
 
@@ -329,9 +356,9 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("/bg/white-texture.png");
-  
-/* background-image: url("/bg/white-texture.png"); */
+  background-image: url("/bg/white-texture6.png");
+
+  /* background-image: url("/bg/white-texture.png"); */
   /* ✅ top-right curve */
   border-top-right-radius: var(--curve);
 
@@ -353,7 +380,6 @@ body {
 @media (max-width: 640px) {
   .kizuna-white {
     padding-top: 40px;
-    
   }
 }
 
@@ -427,4 +453,48 @@ body {
   display: inline-flex;
   gap: 10px;
   align-items: center;
+}
+
+/* =========================
+   ✅ FINAL MOBILE HERO OVERRIDE (PUT LAST)
+   This wins over earlier mobile rules.
+========================= */
+@media (max-width: 640px) {
+  .hero-shell {
+    height: 52vh;        /* 🔽 smaller than 62vh */
+    min-height: 400px;   /* 🔽 */
+    max-height: 520px;   /* 🔽 */
+  }
+
+  .hero-center {
+    padding: 70px 14px 74px; /* 🔽 text moves up */
+  }
+
+  .hero-title {
+    font-size: clamp(32px, 10.5vw, 56px); /* 🔽 title smaller */
+  }
+
+  .hero-divider {
+    margin-top: 12px;
+    width: min(520px, 86vw);
+  }
+
+  .hero-subtitle {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .hero-arrow {
+    bottom: 12px; /* 🔽 arrow closer */
+    transform: translateX(-50%) scale(0.84);
+  }
+
+  .hero-arrow a {
+    width: 54px;
+    height: 54px;
+  }
+
+  .hero-arrow span {
+    font-size: 20px;
+  }
 }

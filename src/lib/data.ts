@@ -120,6 +120,9 @@ export async function getCourses(): Promise<CourseRow[]> {
   return signed;
 }
 
+/**
+ * Home: show upcoming; if none exist -> show most recent by start_date (descending)
+ */
 export async function getHomeCourses(limit = 6): Promise<CourseRow[]> {
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -127,7 +130,8 @@ export async function getHomeCourses(limit = 6): Promise<CourseRow[]> {
   const dd = String(today.getDate()).padStart(2, "0");
   const iso = `${yyyy}-${mm}-${dd}`;
 
-  const { data, error } = await supabase
+  // 1) upcoming first
+  let { data, error } = await supabase
     .from("courses")
     .select(
       `
@@ -157,6 +161,39 @@ export async function getHomeCourses(limit = 6): Promise<CourseRow[]> {
 
   if (error) throw error;
 
+  // 2) fallback: most recent if no upcoming
+  if (!data || data.length === 0) {
+    const res = await supabase
+      .from("courses")
+      .select(
+        `
+        id,
+        title,
+        level,
+        start_date,
+        total_hours,
+        price,
+        days,
+        time,
+        format,
+        href,
+        teacher_id,
+        teacher:teachers (
+          id,
+          name,
+          title,
+          image,
+          description
+        )
+      `
+      )
+      .order("start_date", { ascending: false })
+      .limit(limit);
+
+    if (res.error) throw res.error;
+    data = res.data ?? [];
+  }
+
   const rows = (data ?? []) as any[];
 
   const signed = await Promise.all(
@@ -182,6 +219,10 @@ export type CalligraphyCourseRow = {
   date: string; // YYYY-MM-DD
   schedule_line: string;
   classes_count: number;
+
+  // ✅ RESTORED (like your “before update” version)
+  price: number | null;
+
   teacher_id: string | null;
   description: string[];
   note: string | null;
@@ -199,6 +240,7 @@ export async function getCalligraphyCourses(): Promise<CalligraphyCourseRow[]> {
       date,
       schedule_line,
       classes_count,
+      price,
       teacher_id,
       description,
       note,
@@ -285,4 +327,96 @@ export async function getMoreNews(params: {
   if (error) throw error;
 
   return (data ?? []) as NewsRow[];
+}
+
+/** -------------------- QUIZ / TEST -------------------- **/
+
+export type QuizQuestionRow = {
+  id: string;
+  question: string;
+  options: string[]; // stored as jsonb in DB
+  correct_index: number;
+  explanation?: string | null;
+  is_active: boolean;
+  order_index: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+function normalizeQuizRow(q: any): QuizQuestionRow {
+  return {
+    id: q.id,
+    question: q.question ?? "",
+    options: Array.isArray(q.options) ? q.options : [],
+    correct_index: typeof q.correct_index === "number" ? q.correct_index : 0,
+    explanation: q.explanation ?? null,
+    is_active: !!q.is_active,
+    order_index: typeof q.order_index === "number" ? q.order_index : 0,
+    created_at: q.created_at,
+    updated_at: q.updated_at,
+  };
+}
+
+/** Public: only active questions (ordered) */
+export async function getActiveQuizQuestions(): Promise<QuizQuestionRow[]> {
+  const { data, error } = await supabase
+    .from("quiz_questions")
+    .select("id,question,options,correct_index,explanation,is_active,order_index")
+    .eq("is_active", true)
+    .order("order_index", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+
+  return (data ?? []).map(normalizeQuizRow);
+}
+
+/** Admin: all questions */
+export async function getAllQuizQuestions(): Promise<QuizQuestionRow[]> {
+  const { data, error } = await supabase
+    .from("quiz_questions")
+    .select(
+      "id,question,options,correct_index,explanation,is_active,order_index,created_at,updated_at"
+    )
+    .order("order_index", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+
+  return (data ?? []).map(normalizeQuizRow);
+}
+
+/** Admin: create or update */
+export async function upsertQuizQuestion(
+  input: Partial<QuizQuestionRow> & {
+    question: string;
+    options: string[];
+    correct_index: number;
+  }
+): Promise<QuizQuestionRow> {
+  const payload = {
+    id: input.id,
+    question: input.question,
+    options: input.options,
+    correct_index: input.correct_index,
+    explanation: input.explanation ?? null,
+    is_active: input.is_active ?? true,
+    order_index: input.order_index ?? 0,
+  };
+
+  const { data, error } = await supabase
+    .from("quiz_questions")
+    .upsert(payload)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return normalizeQuizRow(data);
+}
+
+/** Admin: delete */
+export async function deleteQuizQuestion(id: string): Promise<void> {
+  const { error } = await supabase.from("quiz_questions").delete().eq("id", id);
+  if (error) throw error;
 }

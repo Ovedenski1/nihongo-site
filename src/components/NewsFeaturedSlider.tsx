@@ -54,14 +54,10 @@ export default function NewsFeaturedSlider({
       onMouseLeave={() => setPaused(false)}
     >
       <div className="relative overflow-hidden rounded-[18px] bg-white border border-black/10 shadow-[0_18px_44px_rgba(0,0,0,0.10)]">
-        {/* ✅ Mobile: auto height. Desktop: fixed height */}
         <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] lg:h-[420px]">
           {/* IMAGE */}
           <div className="relative w-full overflow-hidden bg-black/[0.02]">
-            {/* ✅ Mobile: nice fixed visual space using aspect ratio.
-                Desktop: fill the fixed-height column. */}
             <div className="relative w-full aspect-[16/10] lg:aspect-auto lg:h-full">
-              {/* Background blurred layer */}
               <Image
                 src={current.image}
                 alt=""
@@ -69,45 +65,36 @@ export default function NewsFeaturedSlider({
                 aria-hidden="true"
                 className="object-cover scale-110 blur-xl opacity-60"
                 priority
-                sizes="(max-width: 1024px) 100vw, 60vw"
               />
 
-              {/* Soft overlay */}
               <div className="absolute inset-0 bg-white/35" />
 
-              {/* Foreground image */}
               <Image
                 src={current.image}
                 alt={current.title}
                 fill
                 className="object-contain p-4 sm:p-6 lg:p-7"
                 priority
-                sizes="(max-width: 1024px) 100vw, 60vw"
               />
 
-              {/* ✅ Arrows live on the IMAGE area (so they never cover text on mobile) */}
               {canSlide && (
                 <>
                   <button
-                    type="button"
                     onClick={prev}
                     aria-label="Previous"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 grid place-items-center
-                               h-10 w-10 rounded-md bg-white/85 hover:bg-white
-                               border border-black/10 shadow-sm"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 grid place-items-center
+                               rounded-md bg-white/85 border border-black/10"
                   >
-                    <span className="text-2xl leading-none">‹</span>
+                    ‹
                   </button>
 
                   <button
-                    type="button"
                     onClick={next}
                     aria-label="Next"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 grid place-items-center
-                               h-10 w-10 rounded-md bg-white/85 hover:bg-white
-                               border border-black/10 shadow-sm"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 grid place-items-center
+                               rounded-md bg-white/85 border border-black/10"
                   >
-                    <span className="text-2xl leading-none">›</span>
+                    ›
                   </button>
                 </>
               )}
@@ -115,47 +102,56 @@ export default function NewsFeaturedSlider({
           </div>
 
           {/* TEXT */}
-          <div className="relative p-5 sm:p-7 lg:p-10 flex items-center">
+          <div className="relative p-5 sm:p-7 lg:p-10 flex items-center min-h-0 overflow-hidden">
             <div className="w-full text-center lg:text-left">
+              {/* Kicker */}
               {current.kicker && (
                 <div
-                  className="font-extrabold tracking-tight text-black leading-none"
-                  style={{
-                    fontSize: "clamp(24px, 7vw, 52px)",
-                  }}
+                  className="font-extrabold leading-none"
+                  style={{ fontSize: "clamp(24px, 7vw, 52px)" }}
                 >
                   {current.kicker}
                 </div>
               )}
 
+              {/* TITLE — NEVER CLAMPED */}
               <div
-                className="mt-3 font-extrabold leading-tight text-black"
-                style={{
-                  fontSize: "clamp(18px, 5.4vw, 34px)",
-                }}
+                className="mt-3 font-extrabold leading-tight whitespace-normal break-words"
+                style={{ fontSize: "clamp(18px, 5.4vw, 34px)" }}
               >
-                <span className="line-clamp-3">{current.title}</span>
+                {current.title}
               </div>
 
+              {/* DATE */}
               {current.dateRange && (
-                <div className="mt-2 sm:mt-3 text-[14px] sm:text-[16px] lg:text-[18px] text-black/70">
+                <div className="mt-2 text-black/70">
                   {current.dateRange}
                 </div>
               )}
 
+              {/* EXCERPT — ALWAYS GETS ... IF LONG */}
               {current.excerpt && (
-                <p className="mt-4 sm:mt-5 text-[14px] sm:text-[15px] lg:text-[16px] leading-relaxed text-black/75 max-w-[55ch] mx-auto lg:mx-0 line-clamp-4">
+                <p
+                  className="
+                    mt-4
+                    text-[14px] sm:text-[15px] lg:text-[16px]
+                    leading-relaxed text-black/75
+                    max-w-[52ch]
+                    mx-auto lg:mx-0
+                    line-clamp-2
+                  "
+                >
                   {current.excerpt}
                 </p>
               )}
 
+              {/* CTA */}
               {current.href && (
                 <a
                   href={current.href}
-                  className="mt-5 sm:mt-6 inline-flex items-center gap-2 font-extrabold text-[var(--kizuna-red)] hover:opacity-80"
+                  className="mt-5 inline-flex items-center gap-2 font-extrabold text-[var(--kizuna-red)]"
                 >
-                  {current.ctaLabel ?? "Learn More"}{" "}
-                  <span aria-hidden="true">→</span>
+                  {current.ctaLabel ?? "Learn More"} →
                 </a>
               )}
             </div>
@@ -163,21 +159,18 @@ export default function NewsFeaturedSlider({
         </div>
       </div>
 
-      {/* Dots */}
+      {/* DOTS */}
       {canSlide && (
-        <div className="mt-4 flex items-center justify-center gap-2">
+        <div className="mt-4 flex justify-center gap-2">
           {safeItems.map((_, i) => (
             <button
               key={i}
-              type="button"
               onClick={() => setActive(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className={[
-                "h-2.5 rounded-full transition",
+              className={`h-2.5 rounded-full transition ${
                 i === active
                   ? "w-8 bg-[var(--kizuna-red)]"
-                  : "w-2.5 bg-black/15 hover:bg-black/25",
-              ].join(" ")}
+                  : "w-2.5 bg-black/20"
+              }`}
             />
           ))}
         </div>
